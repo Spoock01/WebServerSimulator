@@ -1,6 +1,13 @@
+from Utils.Utils import USER_REQUEST
+import os
+from Response import Response
+
+ROOT_DIR = os.path.dirname(os.path.abspath(''))
+
 class Parser:
 
-    def __init__(self, client_message):
+    def __init__(self, client_message, client_socket):
+        self.client_socket = client_socket
         self.client_message = client_message
         self.header = list()
         self.request_content = list()
@@ -20,8 +27,50 @@ class Parser:
                 else:
                     self.request_content.append(line)
 
-        for index, line in enumerate(self.header):
-            print('Line:{:<10}Header Content:{}'.format(index, line))
+        self._response()
 
-        for index, line in enumerate(self.request_content):
-            print('Line:{:<10}Request Content:{}'.format(index, line))
+    def _response(self):
+
+        response = Response()
+        request = self.header[USER_REQUEST].split(' ')
+
+        if request[0] == 'GET':
+
+            # data = ''.encode()
+            # data += 'HTTP/1.0 200 OK\n'.encode()
+            # data += 'content-type: text/HTML\n'.encode()
+            # data += ''.encode()
+
+            response.append_header(''.encode())
+            response.append_header('content-type: text/HTML\n'.encode())
+
+            file_path = ROOT_DIR + '\\Folders\\' + request[1].replace('/', '')
+            print('File in: {} => {}'.format(file_path, request[1].replace('/', '')))
+
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as rf:
+                    for line in rf:
+                        response.append_body(line.encode())
+                response.set_status_code('HTTP/1.0 200 OK\n'.encode())
+            except Exception:
+                response.set_status_code('HTTP/1.0 404 Not Found\n'.encode())
+
+
+
+            print(response.get_response())
+
+            self.client_socket.send(response.get_response())
+
+        elif request[0] == 'POST':
+            print('Not implemented')
+        else:
+            print('Não é get nem post')
+
+
+
+        #
+        # for index, line in enumerate(self.header):
+        #     print('Line:{:<10}Header Content:{}'.format(index, line))
+        #
+        # for index, line in enumerate(self.request_content):
+        #     print('Line:{:<10}Request Content:{}'.format(index, line))
