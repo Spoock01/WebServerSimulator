@@ -18,6 +18,7 @@ class ConnectionHandler:
         if self.connection:
             print('Request: ', self.client_message)
             Parser(client_message=self.client_message, client_socket=self.client_socket).run()
+            self._close_connection()
 
     def _close_connection(self, timeoutexcep=False):     # End of connection
 

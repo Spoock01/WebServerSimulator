@@ -8,7 +8,7 @@ from Utils.Utils import HOST
 server = socket.socket(AF_INET, SOCK_STREAM)
 server.bind((HOST, PORT))
 
-server.listen(0)
+server.listen(5)
 
 # Creating log file
 with open(('../Log/Log-' + str(PORT) + '.txt'), 'w+') as f:

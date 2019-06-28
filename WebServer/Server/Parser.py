@@ -1,5 +1,6 @@
 from Utils.Utils import USER_REQUEST
 import os
+from os import path
 from Response import Response
 
 ROOT_DIR = os.path.dirname(os.path.abspath(''))
@@ -32,30 +33,30 @@ class Parser:
     def _response(self):
 
         response = Response()
-        request = self.header[USER_REQUEST].split(' ')
+        request = self.header[0].split(' ')
 
-        if request[0] == 'GET':
+        if request[USER_REQUEST] == 'GET':
 
             # data = ''.encode()
             # data += 'HTTP/1.0 200 OK\n'.encode()
             # data += 'content-type: text/HTML\n'.encode()
             # data += ''.encode()
 
-            response.append_header(''.encode())
             response.append_header('content-type: text/HTML\n'.encode())
 
             file_path = ROOT_DIR + '\\Folders\\' + request[1].replace('/', '')
             print('File in: {} => {}'.format(file_path, request[1].replace('/', '')))
 
-            try:
+            if path.exists(file_path):
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as rf:
                     for line in rf:
                         response.append_body(line.encode())
                 response.set_status_code('HTTP/1.0 200 OK\n'.encode())
-            except Exception:
+            else:
                 response.set_status_code('HTTP/1.0 404 Not Found\n'.encode())
-
-
+                with open(ROOT_DIR + '\\Folders\\notfound404.htm', 'r', encoding='utf-8', errors='ignore') as rf:
+                    for line in rf:
+                        response.append_body(line.encode())
 
             print(response.get_response())
 
