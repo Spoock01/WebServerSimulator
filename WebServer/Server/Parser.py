@@ -37,33 +37,27 @@ class Parser:
 
         response = Response()
         request = self.header[0].split(' ')
-
-        print('-------------------')
-        t = ''.join(self.request_content)
-        y = json.loads(t)
-        print(type(y))
-        print('-------------------')
+        #
+        # print('-------------------')
+        # t = ''.join(self.request_content)
+        # y = json.loads(t)
+        # print(type(y))
+        # print('-------------------')
 
         if request[USER_REQUEST] == 'GET':
 
             response.append_header('content-type: text/HTML\n'.encode())
 
-            file_path = Path(ROOT_DIR + '/Folders/' + request[1].replace('/', ''))
+            file_path = Path('/Folders' + request[1])
             # file_path = ROOT_DIR + '/Folders/' + request[1].replace('/', '')
-            print('File in: {} => {}'.format(file_path, request[1].replace('/', '')))
+            print('File in: {} => {}'.format(file_path, request[1]))
 
             if path.exists(file_path):
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as rf:
-                    for line in rf:
-                        response.append_body(line.encode())
                 response.set_status_code('HTTP/1.0 200 OK\n'.encode())
+                response.append_body(open_file(file_path))
             else:
                 response.set_status_code('HTTP/1.0 404 Not Found\n'.encode())
-                with open(Path(ROOT_DIR + '/Folders/notfound404.htm'), 'r', encoding='utf-8', errors='ignore') as rf:
-                    for line in rf:
-                        response.append_body(line.encode())
-
-            print(response.get_response())
+                response.append_body(open_file('/Folders/notfound404.htm'))
 
             self.client_socket.send(response.get_response())
 
@@ -73,21 +67,18 @@ class Parser:
                 response.set_status_code('HTTP/1.0 200 OK\n'.encode())
             else:
                 response.set_status_code('HTTP/1.0 404 Not Found\n'.encode())
-                with open(Path(ROOT_DIR + '/Folders/notfound404.htm'), 'r', encoding='utf-8', errors='ignore') as rf:
-                    for line in rf:
-                        response.append_body(line.encode())
+                response.append_body(open_file('/Folders/notfound404.htm'))
 
             self.client_socket.send(response.get_response())
-            # print(request)
-            # print('Not implemented')
         else:
             print('Não é get nem post')
 
 
+def open_file(path):
+    data = b''
 
-        #
-        # for index, line in enumerate(self.header):
-        #     print('Line:{:<10}Header Content:{}'.format(index, line))
-        #
-        # for index, line in enumerate(self.request_content):
-        #     print('Line:{:<10}Request Content:{}'.format(index, line))
+    with open(Path(ROOT_DIR + path), 'r', encoding='utf-8', errors='ignore') as rf:
+        for line in rf:
+            data += line.encode()
+
+    return data
