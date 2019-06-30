@@ -1,6 +1,7 @@
 from Parser import Parser
 import socket
 
+
 class ConnectionHandler:
 
     def __init__(self, client_socket, address):
@@ -10,15 +11,17 @@ class ConnectionHandler:
         self.connection = True
         print('Connection start...')
 
-    def run(self):
-        # print('Address: ', self.address)
+    def run(self, lock):
         self.client_socket.settimeout(5)
         self._recvall()
 
         if self.connection:
             print('Request: ', self.client_message)
-            Parser(client_message=self.client_message, client_socket=self.client_socket).run()
+            Parser(client_message=self.client_message, client_socket=self.client_socket,
+                   lock=lock, user_address=self.address).run()
             self._close_connection()
+
+        print('\n\n')
 
     def _close_connection(self, timeoutexcep=False):     # End of connection
 

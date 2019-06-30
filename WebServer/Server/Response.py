@@ -16,3 +16,6 @@ class Response:
 
     def get_response(self):
         return self.status + self.response_header + b'\n' + self.response_body
+
+    def get_status(self):
+        return self.status.decode()
