@@ -1,19 +1,21 @@
-from Utils.Utils import USER_REQUEST, ROUTES
 # from Utils.Utils import ROUTES
 import json
 import os
 from os import path
 from pathlib import Path
-from Response import Response
-from Logger import Logger
-from Utils.Utils import STATUS_200, STATUS_204, STATUS_401, STATUS_403, STATUS_404, STATUS_501
-# from Utils.Utils import STATUS_204
-# from Utils.Utils import STATUS_404
-# from Utils.Utils import STATUS_501
-# from Utils.Utils import STATUS_401
-from Utils.Utils import PROTECTED_ROUTES, AUTHORIZATION_TOKENS
+from Server.Response import Response
+from Server.Logger import Logger
 
-ROOT_DIR = os.path.dirname(os.path.abspath(''))
+try:
+    from Utils.Utils import STATUS_200, STATUS_204, STATUS_401, STATUS_403, STATUS_404, STATUS_501
+    from Utils.Utils import PROTECTED_ROUTES, AUTHORIZATION_TOKENS
+    from Utils.Utils import USER_REQUEST, ROUTES
+except ModuleNotFoundError:
+    from Utils import STATUS_200, STATUS_204, STATUS_401, STATUS_403, STATUS_404, STATUS_501
+    from Utils import PROTECTED_ROUTES, AUTHORIZATION_TOKENS 
+    from Utils import USER_REQUEST, ROUTES   
+
+ROOT_DIR = os.path.dirname(os.path.abspath('WebServer'))
 
 
 class Parser:
