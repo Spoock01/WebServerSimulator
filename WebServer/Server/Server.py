@@ -12,7 +12,7 @@ server.bind((HOST, PORT))
 server.listen(5)
 
 # Creating log file
-with open(('../Log/Log-' + str(PORT) + '.txt'), 'w+') as f:
+with open(('../Log/Log-' + str(PORT) + '.txt'), 'a+') as f:
     f.write('Server started at: ' + str(time.strftime('{%d-%m-%Y %H:%M:%S}')) + '\n')
 
 while True:

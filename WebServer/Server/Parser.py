@@ -1,14 +1,17 @@
-from Utils.Utils import USER_REQUEST
-from Utils.Utils import ROUTES
+from Utils.Utils import USER_REQUEST, ROUTES
+# from Utils.Utils import ROUTES
 import json
 import os
 from os import path
 from pathlib import Path
 from Response import Response
 from Logger import Logger
-from Utils.Utils import STATUS_200
-from Utils.Utils import STATUS_204
-from Utils.Utils import STATUS_404
+from Utils.Utils import STATUS_200, STATUS_204, STATUS_401, STATUS_403, STATUS_404, STATUS_501
+# from Utils.Utils import STATUS_204
+# from Utils.Utils import STATUS_404
+# from Utils.Utils import STATUS_501
+# from Utils.Utils import STATUS_401
+from Utils.Utils import PROTECTED_ROUTES, AUTHORIZATION_TOKENS
 
 ROOT_DIR = os.path.dirname(os.path.abspath(''))
 
@@ -47,12 +50,20 @@ class Parser:
         request = self.header[0].split(' ')
 
         if request[USER_REQUEST] == 'GET':
-            self.get_request(request)
+            if request[1] in PROTECTED_ROUTES:
+                if self.unauthorized_request(request):
+                    self.get_request(request)
+            else:
+                self.get_request(request)
 
         elif request[USER_REQUEST] == 'POST':
-            self.post_request(request)
+            if request[1] in PROTECTED_ROUTES:
+                if self.unauthorized_request(request):
+                    self.post_request(request)
+            else:
+                self.post_request(request)
         else:
-            print('Não é get nem post')
+            self.not_implemented_request(request)
 
     def get_request(self, request):
 
@@ -74,11 +85,14 @@ class Parser:
         self.logger.set_request_type(request[USER_REQUEST])
         self.client_socket.send(response.get_response())
 
+    #The POST request receives the data as JSON
     def post_request(self, request):
         response = Response()
 
         response.append_header('content-type: text/HTML\n'.encode())
         if request[1] in ROUTES:
+            jsonData = ''.join(self.request_content).replace('\t', '')
+            data = json.loads(jsonData)
             response.set_status_code((STATUS_204 + '\n').encode())
         else:
             response.set_status_code((STATUS_404 + '\n').encode())
@@ -87,6 +101,64 @@ class Parser:
         self.logger.set_status_response(response.get_status())
         self.logger.set_request_type(request[USER_REQUEST])
         self.client_socket.send(response.get_response())
+
+    def not_implemented_request(self, request):
+        response = Response()
+
+        response.append_header('content-type: text/HTML\n'.encode())
+        response.set_status_code((STATUS_501 + '\n').encode())
+        response.append_body(self._open_file(ROOT_DIR + '/Folders/notimplemented.htm'))
+
+        self.logger.set_status_response(response.get_status())
+        self.logger.set_request_type(request[USER_REQUEST])
+        self.client_socket.send(response.get_response())
+
+    def unauthorized_request(self, request):
+        response = Response()
+
+        response.append_header('content-type: text/HTML\n'.encode())
+        auth_token = self.get_authorization_token(self.header)
+        if auth_token:
+            if auth_token in AUTHORIZATION_TOKENS:
+                return True
+            else:
+                print('-'*20)
+                print(auth_token)
+                print('-' * 20)
+                self.forbidden_request(request)
+                return False
+
+        response.append_header('WWW-Authenticate: Basic realm= "System Administrator"\n'.encode())
+        response.set_status_code((STATUS_401 + '\n').encode())
+
+        self.logger.set_status_response(response.get_status())
+        self.logger.set_request_type(request[USER_REQUEST])
+        self.client_socket.send(response.get_response())
+        return False
+
+    def forbidden_request(self, request):
+        response = Response()
+
+        response.append_header('content-type: text/HTML\n'.encode())
+        response.append_body(self._open_file(ROOT_DIR + '/Folders/unauthorized.htm'))
+        response.set_status_code((STATUS_403 + '\n').encode())
+
+        self.logger.set_status_response(response.get_status())
+        self.logger.set_request_type(request[USER_REQUEST])
+        self.client_socket.send(response.get_response())
+
+    def get_authorization_token(self, header):
+        auth = ''
+
+        for h in header:
+            if 'Authorization:' in h:
+                auth = h
+                break
+
+        if not auth:
+            return auth
+
+        return auth.replace('\r', '').split(' ')[2]
 
     def _open_file(self, _path):
         data = b''
