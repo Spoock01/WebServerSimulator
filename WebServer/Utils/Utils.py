@@ -14,4 +14,4 @@ STATUS_403 = 'HTTP/1.0 403 FORBIDDEN'
 STATUS_404 = 'HTTP/1.0 404 NOT FOUND'
 STATUS_501 = 'HTTP/1.0 501 NOT IMPLEMENTED'
 
-LOG_FILE = '../Log/Log-' + str(PORT) + '.txt'
+LOG_FILE = './Log/Log-' + str(PORT) + '.txt'

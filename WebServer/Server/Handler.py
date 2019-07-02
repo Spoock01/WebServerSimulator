@@ -1,4 +1,4 @@
-from Parser import Parser
+from Server.Parser import Parser
 import socket
 
 

@@ -1,6 +1,12 @@
-from Utils.Utils import LOG_FILE
 import time
+import sys
 
+
+try:
+    from Utils.Utils import LOG_FILE
+except ModuleNotFoundError:
+    print(sys.path)
+    from Utils import LOG_FILE
 
 class Logger:
 

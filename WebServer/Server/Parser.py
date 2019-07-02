@@ -1,19 +1,21 @@
-from Utils.Utils import USER_REQUEST, ROUTES
 # from Utils.Utils import ROUTES
 import json
 import os
 from os import path
 from pathlib import Path
-from Response import Response
-from Logger import Logger
-from Utils.Utils import STATUS_200, STATUS_204, STATUS_401, STATUS_403, STATUS_404, STATUS_501
-# from Utils.Utils import STATUS_204
-# from Utils.Utils import STATUS_404
-# from Utils.Utils import STATUS_501
-# from Utils.Utils import STATUS_401
-from Utils.Utils import PROTECTED_ROUTES, AUTHORIZATION_TOKENS
+from Server.Response import Response
+from Server.Logger import Logger
 
-ROOT_DIR = os.path.dirname(os.path.abspath(''))
+try:
+    from Utils.Utils import STATUS_200, STATUS_204, STATUS_401, STATUS_403, STATUS_404, STATUS_501
+    from Utils.Utils import PROTECTED_ROUTES, AUTHORIZATION_TOKENS
+    from Utils.Utils import USER_REQUEST, ROUTES
+except ModuleNotFoundError:
+    from Utils import STATUS_200, STATUS_204, STATUS_401, STATUS_403, STATUS_404, STATUS_501
+    from Utils import PROTECTED_ROUTES, AUTHORIZATION_TOKENS 
+    from Utils import USER_REQUEST, ROUTES   
+
+ROOT_DIR = os.path.dirname(os.path.abspath('WebServer'))
 
 
 class Parser:
@@ -82,7 +84,7 @@ class Parser:
             response.append_body(self._open_file(ROOT_DIR + '/Folders/notfound404.htm'))
 
         self.logger.set_status_response(response.get_status())
-        self.logger.set_request_type(request[USER_REQUEST])
+        self.logger.set_request_type(self.header[0])
         self.client_socket.send(response.get_response())
 
     #The POST request receives the data as JSON
@@ -99,7 +101,7 @@ class Parser:
             response.append_body(self._open_file(ROOT_DIR + '/Folders/notfound404.htm'))
 
         self.logger.set_status_response(response.get_status())
-        self.logger.set_request_type(request[USER_REQUEST])
+        self.logger.set_request_type(self.header[0])
         self.client_socket.send(response.get_response())
 
     def not_implemented_request(self, request):
@@ -110,7 +112,7 @@ class Parser:
         response.append_body(self._open_file(ROOT_DIR + '/Folders/notimplemented.htm'))
 
         self.logger.set_status_response(response.get_status())
-        self.logger.set_request_type(request[USER_REQUEST])
+        self.logger.set_request_type(self.header[0])
         self.client_socket.send(response.get_response())
 
     def unauthorized_request(self, request):
@@ -132,7 +134,7 @@ class Parser:
         response.set_status_code((STATUS_401 + '\n').encode())
 
         self.logger.set_status_response(response.get_status())
-        self.logger.set_request_type(request[USER_REQUEST])
+        self.logger.set_request_type(self.header[0])
         self.client_socket.send(response.get_response())
         return False
 
@@ -144,7 +146,7 @@ class Parser:
         response.set_status_code((STATUS_403 + '\n').encode())
 
         self.logger.set_status_response(response.get_status())
-        self.logger.set_request_type(request[USER_REQUEST])
+        self.logger.set_request_type(self.header[0])
         self.client_socket.send(response.get_response())
 
     def get_authorization_token(self, header):
